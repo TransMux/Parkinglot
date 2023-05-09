@@ -1,5 +1,3 @@
-from pathlib import Path
-from typing import Tuple, Optional
 from time import time
 from storage import car_table, park_table, park_record_table
 from utils.Clogging import ColoredLogger
@@ -8,8 +6,8 @@ from tinydb import Query
 logger = ColoredLogger('Database')
 
 
-def car_entry(car_id: str, car_type: str, car_image: Optional[str, Path], car_park: str):
-    logger.debug(f'car_entry: {car_id}, {car_type}, {car_image}')
+def car_entry(car_id: str, car_type: str, car_image: str, car_park: str):
+    logger.debug(f'car_entry handle: {car_id}, {car_type}, {car_image}')
 
     # 1. change car status
     Car = Query()
@@ -29,7 +27,7 @@ def car_entry(car_id: str, car_type: str, car_image: Optional[str, Path], car_pa
         "park_leave_time": 0,
         "park_fee": 0,
         "park_status": "在场",
-        "park_image": str(car_image)
+        "park_image": car_image
     })
 
     # 3. change park status
@@ -43,11 +41,11 @@ def car_entry(car_id: str, car_type: str, car_image: Optional[str, Path], car_pa
         "park_empty": park["park_empty"] - 1
     }, Park.park_id == car_park)
 
-    logger.debug(f'car_entry: {car_id}, {car_type}, {car_image} done')
+    logger.info(f'car_entry success: {car_id}, {car_type}, {car_image} done')
 
 
-def car_leave(car_id: str, car_image: Optional[str, Path]):
-    logger.debug(f'car_leave: {car_id}, {car_image}')
+def car_leave(car_id: str, car_image: str):
+    logger.debug(f'car_leave handle: {car_id}, {car_image}')
 
     # 1. change car status
     Car = Query()
@@ -68,7 +66,7 @@ def car_leave(car_id: str, car_image: Optional[str, Path]):
         "park_leave_time": time(),
         "park_fee": (time() - park_record["park_entry_time"]) / 60,  # 1 rmb / min
         "park_status": "离场",
-        "park_image": str(car_image)
+        "park_image": car_image
     })
 
     # 3. change park status
@@ -82,4 +80,4 @@ def car_leave(car_id: str, car_image: Optional[str, Path]):
         "park_empty": park["park_empty"] + 1
     }, Park.park_id == park_record["park_id"])
 
-    logger.debug(f'car_leave: {car_id}, {car_image} done')
+    logger.info(f'car_leave success: {car_id}, {car_image} done')
