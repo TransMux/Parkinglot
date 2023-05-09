@@ -9,6 +9,10 @@ logger = ColoredLogger('Database')
 def car_entry(car_id: str, car_type: str, car_image: str, car_park: str):
     logger.debug(f'car_entry handle: {car_id}, {car_type}, {car_image}')
 
+    if not car_id or not car_type or not car_park:
+        logger.error(f'car_entry failed: {car_id}, {car_type}, {car_park} 缺失参数')
+        return
+
     # 1. change car status
     Car = Query()
 
@@ -57,7 +61,11 @@ def car_leave(car_id: str, car_image: str):
     # 2. change park record
     ParkRecord = Query()
     # 寻找最后一条记录
-    park_record = park_record_table.search(ParkRecord.car_id == car_id)[-1]
+    try:
+        park_record = park_record_table.search(ParkRecord.car_id == car_id)[-1]
+    except IndexError:
+        logger.error(f'car_leave failed: {car_id} not found')
+        return
 
     park_record_table.insert({
         "car_id": park_record["car_id"],
